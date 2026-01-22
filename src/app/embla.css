@@ -1,0 +1,26 @@
+.embla {
+  width: 100%;
+  height: 100%;
+}
+
+.embla__viewport {
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
+}
+
+.embla__container {
+  display: flex;
+  height: 100%;
+}
+
+.embla__slide {
+  flex: 0 0 100%;
+  width: 100%;
+  height: 100%;
+}
+
+.embla__slide__number {
+  width: 100%;
+  height: 100%;
+}
