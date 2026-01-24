@@ -1,6 +1,5 @@
 "use client";
-
-import type { Variants, HTMLMotionProps } from "motion/react";
+import type { Variants } from "motion/react";
 import { motion, useAnimation } from "motion/react";
 import {
     forwardRef,
@@ -8,27 +7,22 @@ import {
     useImperativeHandle,
     useRef,
 } from "react";
-import type { MouseEvent } from "react";
+import type { HTMLMotionProps } from "motion/react";
 import { cn } from "../../../lib/utils";
 
 /* -------------------- Types -------------------- */
 
-export interface HomeIconHandle {
+export interface CartIconHandle {
     startAnimation: () => void;
     stopAnimation: () => void;
 }
 
-export interface HomeIconProps extends HTMLMotionProps<"div"> {
+export interface CartIconProps extends HTMLMotionProps<"div"> {
     label?: string;
     size?: number;
 }
 
-/* -------------------- Animation Config -------------------- */
-
-const DEFAULT_TRANSITION = {
-    duration: 0.6,
-    opacity: { duration: 0.2 },
-};
+/* -------------------- Animation Variants -------------------- */
 
 const WRAPPER_VARIANTS: Variants = {
     normal: {
@@ -37,29 +31,35 @@ const WRAPPER_VARIANTS: Variants = {
     },
     animate: {
         scale: 1.1,
-        color: "brown",
+        color: "currentColor4",
         transition: {
             type: "spring",
-            stiffness: 280,
-            damping: 16,
+            stiffness: 300,
+            damping: 15,
         },
     },
 };
 
-const PATH_VARIANTS: Variants = {
+const CART_VARIANTS: Variants = {
     normal: {
-        pathLength: 1,
-        opacity: 1,
+        scale: 1,
+        color: "currentColor",
     },
     animate: {
-        pathLength: [0, 1],
-        opacity: [0, 1],
+        color: "currentColor",
+        scale: 1.1,
+        y: [0, -5, 0],
+        transition: {
+            duration: 0.3,
+            ease: "easeInOut",
+            y: { repeat: 1, delay: 0.1, duration: 0.4 },
+        },
     },
 };
 
 /* -------------------- Component -------------------- */
 
-const HomeIcon = forwardRef<HomeIconHandle, HomeIconProps>(
+const ProductCartIcon = forwardRef<CartIconHandle, CartIconProps>(
     (
         {
             label = "",
@@ -76,14 +76,17 @@ const HomeIcon = forwardRef<HomeIconHandle, HomeIconProps>(
 
         useImperativeHandle(ref, () => {
             isControlledRef.current = true;
+
             return {
                 startAnimation: () => controls.start("animate"),
                 stopAnimation: () => controls.start("normal"),
             };
         });
 
-        const handleMouseEnter = useCallback(
-            (e: MouseEvent<HTMLDivElement>) => {
+        const handleMouseEnter = useCallback<
+            React.MouseEventHandler<HTMLDivElement>
+        >(
+            (e) => {
                 if (isControlledRef.current) {
                     onMouseEnter?.(e);
                 } else {
@@ -93,8 +96,10 @@ const HomeIcon = forwardRef<HomeIconHandle, HomeIconProps>(
             [controls, onMouseEnter]
         );
 
-        const handleMouseLeave = useCallback(
-            (e: MouseEvent<HTMLDivElement>) => {
+        const handleMouseLeave = useCallback<
+            React.MouseEventHandler<HTMLDivElement>
+        >(
+            (e) => {
                 if (isControlledRef.current) {
                     onMouseLeave?.(e);
                 } else {
@@ -117,29 +122,23 @@ const HomeIcon = forwardRef<HomeIconHandle, HomeIconProps>(
                 onMouseLeave={handleMouseLeave}
                 {...props}
             >
-                {/* ICON */}
                 <motion.svg
+                    animate={controls}
                     fill="none"
                     height={size}
-                    width={size}
                     stroke="currentColor"
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     strokeWidth={1.5}
+                    transition={{ duration: 0.2 }}
+                    variants={CART_VARIANTS}
                     viewBox="0 0 24 24"
+                    width={size}
                     xmlns="http://www.w3.org/2000/svg"
                 >
-                    <path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-
-                    <motion.path
-                        d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"
-                        variants={PATH_VARIANTS}
-                        animate={controls}
-                        transition={DEFAULT_TRANSITION}
-                    />
+                    <path d="M6.29977 5H21L19 12H7.37671M20 16H8L6 3H3M9 20C9 20.5523 8.55228 21 8 21C7.44772 21 7 20.5523 7 20C7 19.4477 7.44772 19 8 19C8.55228 19 9 19.4477 9 20ZM20 20C20 20.5523 19.5523 21 19 21C18.4477 21 18 20.5523 18 20C18 19.4477 18.4477 19 19 19C19.5523 19 20 19.4477 20 20Z" />
                 </motion.svg>
 
-                {/* LABEL */}
                 <motion.span
                     className="text-sm font-light"
                     variants={{
@@ -154,5 +153,6 @@ const HomeIcon = forwardRef<HomeIconHandle, HomeIconProps>(
     }
 );
 
-HomeIcon.displayName = "HomeIcon";
-export { HomeIcon };
+ProductCartIcon.displayName = "ProductCartIcon";
+
+export { ProductCartIcon };

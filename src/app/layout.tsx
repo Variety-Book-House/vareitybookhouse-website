@@ -11,6 +11,7 @@ import { Quicksand, Fraunces } from "next/font/google";
 import Script from "next/script";
 import type { Metadata } from "next";
 import "./embla.css"
+import { NavbarThemeProvider } from "../../context/NavbarThemeContext";
 /* -------------------- Fonts -------------------- */
 
 const quicksand = Quicksand({
@@ -55,14 +56,16 @@ export default function RootLayout({ children }: RootLayoutProps) {
           <CartProvider>
             <WishlistProvider>
               <ScrollProvider>
-                <Navbar />
-                {children}
+                <NavbarThemeProvider>
+                  <Navbar />
+                  {children}
+                </NavbarThemeProvider>
               </ScrollProvider>
             </WishlistProvider>
           </CartProvider>
 
 
-          <Footer />
+
 
         </body>
       </html>

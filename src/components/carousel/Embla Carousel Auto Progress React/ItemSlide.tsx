@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import ItemCard from '@/components/ItemCard'
 import type { Book } from '@/components/ItemCard'
 
@@ -9,49 +9,69 @@ interface ItemSlideProps {
     books: Book[]
 }
 
-/* ---------- helpers ---------- */
+type CardSize = 'sm' | 'md' | 'lg'
 
-// Map genre -> Tailwind font-family
+const CARD_DIMENSIONS = {
+    sm: { width: 160, height: 260 },
+    md: { width: 200, height: 320 },
+    lg: { width: 260, height: 420 },
+}
+const TITLE_STYLES = {
+    sm: {
+        className: 'text-xl tracking-wide',
+        padding: 'pb-2',
+    },
+    md: {
+        className: 'text-3xl tracking-wider',
+        padding: 'pb-3',
+    },
+    lg: {
+        className: 'text-4xl tracking-[0.15em]',
+        padding: 'pb-4',
+    },
+}
 
-
-/* ---------- component ---------- */
+const GAP = 24
 
 const ItemSlide = ({ genre, books }: ItemSlideProps) => {
+    const getCardSize = (width: number): CardSize => {
+        if (width < 640) return 'sm'
+        if (width < 1024) return 'md'
+        return 'lg'
+    }
 
+    const [cardSize, setCardSize] = useState<CardSize>('md')
+    const [visibleCount, setVisibleCount] = useState(3)
 
-    // Optional: keep your color extraction if needed
     useEffect(() => {
-        let cancelled = false
-        const extractColors = async () => {
-            await Promise.all(
-                books.map(
-                    (book) =>
-                        new Promise<void>((resolve) => {
-                            const src = book.volumeInfo?.imageLinks?.thumbnail
-                            if (!src) return resolve()
-                            const img = new Image()
-                            img.crossOrigin = 'anonymous'
-                            img.src = src
-                            img.onerror = () => resolve()
-                        })
-                )
-            )
-        }
-        extractColors()
-        return () => {
-            cancelled = true
-        }
-    }, [books])
+        const updateLayout = () => {
+            const width = window.innerWidth
+            const height = window.innerHeight
 
-    // Build background image path based on genre
-    const bgImage = `/bg/${genre.toLowerCase()}.png`
+            const size = getCardSize(width)
+            setCardSize(size)
+
+            const { width: cardW, height: cardH } = CARD_DIMENSIONS[size]
+
+            const containerWidth = width - 40
+            const containerHeight = height - 200
+
+            const cols =
+                Math.floor((containerWidth + GAP) / (cardW + GAP)) || 1
+            const rows =
+                Math.floor((containerHeight + GAP) / (cardH + GAP)) || 1
+
+            setVisibleCount(cols * rows)
+        }
+
+        updateLayout()
+        window.addEventListener('resize', updateLayout)
+        return () => window.removeEventListener('resize', updateLayout)
+    }, [])
 
     return (
         <div
-            className="h-full px-5 py-1 flex flex-col overflow-hidden bg-cover bg-center"
-            style={{
-                backgroundImage: `url(${bgImage})`,
-            }}
+            className="w-full px-5 py-6 flex flex-col gap-6 bg-cover bg-center overflow-hidden"
         >
             <h2
                 style={{
@@ -66,31 +86,31 @@ const ItemSlide = ({ genre, books }: ItemSlideProps) => {
                                         ? 'var(--font-fantasy)'
                                         : 'var(--font-default)',
                 }}
-                className={`text-4xl text-center font-light tracking-wide pb-3`}
+                className={`
+        text-center
+        font-light
+        uppercase
+        ${TITLE_STYLES[cardSize].className}
+        ${TITLE_STYLES[cardSize].padding}
+    `}
             >
-                {genre.toUpperCase()}
+                {genre}
             </h2>
 
+
             <div
-                className="
-          flex-1
-          grid
-          gap-10
-          overflow-hidden
-          justify-center
-          place-content-start
-          grid-cols-[repeat(auto-fit,260px)]
-          sm:grid-cols-[repeat(auto-fit,260px)]
-        "
+                className="grid justify-center gap-6"
+                style={{
+                    gridTemplateColumns: `repeat(auto-fit, ${CARD_DIMENSIONS[cardSize].width}px)`,
+                }}
             >
-                {books.slice(0, 3).map((book) => (
+                {books.slice(0, visibleCount).map((book) => (
                     <ItemCard
-                        textSize="lg"
                         key={book.id}
                         book={book}
+                        size={cardSize}
                         liked={[]}
                         setLiked={() => { }}
-                        className="w-[240px] h-[360px]"
                     />
                 ))}
             </div>

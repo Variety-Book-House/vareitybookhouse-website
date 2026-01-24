@@ -184,8 +184,8 @@ function CarouselPrevious({
       variant="default"
       size="icon"
       className={cn(
-        "relative absolute top-0 left-0 h-full w-16 flex items-center justify-center font-bold pointer-events-auto rounded-none overflow-hidden",
-        "group opacity-10 hover:opacity-40 transition-opacity duration-600"
+        " relative absolute top-0 left-0 h-full w-16 flex items-center justify-center font-bold pointer-events-auto rounded-none overflow-hidden",
+        "group opacity-10 hover:opacity-40 transition-opacity duration-600 hidden md:flex"
       )}
       disabled={!canScrollPrev}
       onClick={scrollPrev}
@@ -221,7 +221,7 @@ function CarouselNext({
       size="icon"
       className={cn(
         "relative absolute top-0 right-0 h-full w-16 flex items-center justify-center font-bold pointer-events-auto rounded-none overflow-hidden",
-        "group opacity-10 hover:opacity-40 transition-opacity duration-600"
+        "group opacity-10 hover:opacity-40 transition-opacity duration-600 hidden md:flex"
       )}
       disabled={!canScrollNext}
       onClick={scrollNext}

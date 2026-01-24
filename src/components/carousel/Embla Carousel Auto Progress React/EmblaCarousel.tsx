@@ -31,7 +31,7 @@ export interface Book {
 
 type PropType = {
   books: Book[]
-  slides: number[]
+
   options?: EmblaOptionsType
 }
 

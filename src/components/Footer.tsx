@@ -3,10 +3,10 @@ import Link from "next/link";
 
 const Footer: React.FC = () => {
   return (
-    <div className="mt-auto shadow-inner">
+    <div className="mt-auto shadow-inner uppercase">
       <div className="footer-container mx-auto grid max-w-6xl grid-cols-2 gap-6 px-4 py-10 md:grid-cols-4 md:grid-rows-4 md:gap-x-6 md:gap-y-0 md:px-8 lg:gap-x-8 lg:gap-y-2">
         <div className="bookstore-desc col-span-2 md:row-span-3">
-          <h2 className="my-2 font-main text-xl font-semibold">
+          <h2 className="my-2 font-main  text-xl font-semibold">
             Variety Book House
           </h2>
           <div className="text-sm">

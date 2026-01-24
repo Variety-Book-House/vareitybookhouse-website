@@ -1,7 +1,8 @@
 'use client'
 import { cn } from "@/lib/utils"
-import React, { useEffect, useRef, useState } from 'react'
-import ColorThief from 'colorthief'
+import { ProductHeartIcon } from "./icons/ProductHeartIcon"
+import { ProductCartIcon } from "./icons/ProductCartIcon"
+import React from 'react'
 
 export interface Book {
     id?: string
@@ -19,13 +20,49 @@ export interface Book {
         }
     }
 }
+
 interface ItemCardProps {
     book: Book
     liked: string[]
     setLiked: React.Dispatch<React.SetStateAction<string[]>>
     onClick?: () => void
     className?: string
-    textSize?: 'sm' | 'md' | 'lg' // optional text size prop
+    size?: 'xl' | 'sm' | 'md' | 'lg'
+}
+
+const SIZE_CONFIG = {
+    sm: {
+        card: 'w-[160px] h-[260px]',
+        image: 'h-[180px]',
+        textHeight: 'h-[80px]',
+        title: 'text-[10px]',
+        author: 'text-[10px]',
+        price: 'text-[10px]',
+    },
+    md: {
+        card: 'w-[200px] h-[320px]',
+        image: 'h-[220px]',
+        textHeight: 'h-[100px]',
+        title: 'text-xs',
+        author: 'text-[10px]',
+        price: 'text-xs',
+    },
+    lg: {
+        card: 'w-[260px] h-[420px]',
+        image: 'h-[300px]',
+        textHeight: 'h-[120px]',
+        title: 'text-[16px]',
+        author: 'text-sm',
+        price: 'text-[16px]',
+    },
+    xl: {
+        card: 'w-[320px] h-[460px]',
+        image: 'h-[340px]',
+        textHeight: 'h-[120px]',
+        title: 'text-xl',
+        author: 'text-lg',
+        price: 'text-xl',
+    },
 }
 
 const ItemCard = ({
@@ -34,7 +71,7 @@ const ItemCard = ({
     setLiked,
     onClick,
     className,
-    textSize = 'sm' // default small
+    size = 'md',
 }: ItemCardProps) => {
     const title = book?.volumeInfo?.title ?? 'Untitled Book'
     const author = book?.volumeInfo?.authors?.[0] ?? 'Unknown Author'
@@ -42,89 +79,84 @@ const ItemCard = ({
 
     const image = '/image 14.png'
 
-    const imgRef = useRef<HTMLImageElement | null>(null)
-    const [bgColor, setBgColor] = useState('rgb(20,20,20)')
-
-    useEffect(() => {
-        const img = imgRef.current
-        if (!img) return
-
-        const colorThief = new ColorThief()
-
-        const extractColor = () => {
-            try {
-                const [r, g, b] = colorThief.getColor(img)
-                setBgColor(`rgb(${r}, ${g}, ${b})`)
-            } catch {
-                setBgColor('rgb(20,20,20)')
-            }
-        }
-
-        if (img.complete) {
-            extractColor()
-        } else {
-            img.addEventListener('load', extractColor)
-        }
-
-        return () => {
-            img.removeEventListener('load', extractColor)
-        }
-    }, [image])
-
-    // Tailwind classes based on textSize prop
-    const sizeClasses = {
-        sm: { title: 'text-xs', author: 'text-[10px]', price: 'text-xs' },
-        md: { title: 'text-sm', author: 'text-xs', price: 'text-sm' },
-        lg: { title: 'text-base', author: 'text-sm', price: 'text-base' },
-    }
-
-    const classes = sizeClasses[textSize]
+    const styles = SIZE_CONFIG[size]
 
     return (
         <div
             onClick={onClick}
             className={cn(
                 `
-                h-[400px]
-                w-[240px]
-                flex flex-col items-center
-                text-center
-                cursor-pointer
-                bg-white
-                hover:shadow-md
-                transition-shadow
-                `,
+        flex flex-col
+        bg-white
+        cursor-pointer
+        overflow-hidden
+        transition-all duration-300 ease-out
+        hover:shadow-lg
+        hover:-translate-y-[2px]
+        `,
+                styles.card,
                 className
             )}
         >
-            {/* Image */}
+            {/* IMAGE */}
             <div
-                className="relative w-full aspect-[3/4] overflow-hidden transition-colors duration-300 flex items-center justify-center"
-                style={{ backgroundColor: bgColor }}
+                className={cn(
+                    'relative overflow-hidden py-2 bg-[#fff1e2] flex items-center justify-center',
+                    styles.image
+                )}
             >
                 <img
-                    ref={imgRef}
                     src={image}
                     alt={title}
-                    crossOrigin="anonymous"
-                    className="object-cover "
+                    className="object-contain w-full h-full"
                     onError={(e) => (e.currentTarget.src = '/default.jpg')}
                 />
             </div>
 
-            {/* Text */}
-            <div className="w-full flex flex-col items-center text-center mt-2">
-                <h3 className={`font-light leading-snug line-clamp-2 ${classes.title}`}>
-                    {title.toUpperCase()}
-                </h3>
+            {/* TEXT + ACTIONS */}
+            <div
+                className={cn(
+                    'flex justify-between items-start px-3 py-2',
+                    styles.textHeight
+                )}
+            >
+                {/* Text */}
+                <div className="flex flex-col justify-between text-left">
+                    <h3
+                        className={cn(
+                            'font-light line-clamp-2',
+                            styles.title
+                        )}
+                    >
+                        {title.toUpperCase()}
+                    </h3>
+                    <p
+                        className={cn(
+                            'text-light tracking-[0.12em] uppercase mt-1',
+                            styles.author
+                        )}
+                    >
+                        {author}
+                    </p>
+                    <p
+                        className={cn(
+                            'font-light text-neutral-900 mt-1',
+                            styles.price
+                        )}
+                    >
+                        ₹{price}
+                    </p>
+                </div>
 
-                <p className={`text-gray-600 ${classes.author}`}>
-                    {author.toUpperCase()}
-                </p>
-
-                <p className={`font-light ${classes.price}`}>
-                    ₹{price}
-                </p>
+                {/* Actions */}
+                <div className="flex flex-col items-center justify-between gap-2">
+                    <button className="p-2 text-neutral-500 hover:text-neutral-900 transition-all active:scale-95">
+                        <ProductCartIcon />
+                    </button>
+                    <button className="p-2 text-neutral-500 hover:text-red-500 transition-all active:scale-95">
+                        <ProductHeartIcon />
+                    </button>
+                </div>
             </div>
         </div>
     )

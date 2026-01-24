@@ -62,7 +62,7 @@ const CART_VARIANTS: Variants = {
 const CartIcon = forwardRef<CartIconHandle, CartIconProps>(
   (
     {
-      label = "WISHLIST",
+      label = "CART",
       className,
       size = 18,
       onMouseEnter,
@@ -129,7 +129,7 @@ const CartIcon = forwardRef<CartIconHandle, CartIconProps>(
           stroke="currentColor"
           strokeLinecap="round"
           strokeLinejoin="round"
-          strokeWidth={1}
+          strokeWidth={1.5}
           transition={{ duration: 0.2 }}
           variants={CART_VARIANTS}
           viewBox="0 0 24 24"

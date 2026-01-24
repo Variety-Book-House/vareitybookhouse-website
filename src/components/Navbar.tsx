@@ -18,6 +18,9 @@ import { CartIcon } from './icons/CartIcon';
 import { SearchIcon } from './icons/SearchIcon';
 import { useCart } from '../../context/CartContext';
 import { useWishlist } from '../../context/WIshlistContext';
+import { useNavbarTheme } from '../../context/NavbarThemeContext'
+
+
 
 export interface CartItem {
   id: string;
@@ -35,6 +38,7 @@ import { ScrollContext } from '../../context/ScrollContext'
 
 const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
+  const mobileNavRef = useRef<HTMLDivElement>(null)
 
   const section = useContext(ScrollContext)
   const isAtTop = section === 0
@@ -43,26 +47,40 @@ const Navbar: React.FC = () => {
 
   const openModal = () => setIsOpen(true);
   const closeModal = () => setIsOpen(false);
-  const navRef = useRef<HTMLDivElement | null>(null)
-
+  const desktopNavRef = useRef<HTMLDivElement | null>(null)
   useEffect(() => {
-    if (!navRef.current) return
+    let currentEl: HTMLDivElement | null = null
+
+    const getActiveNav = () =>
+      window.innerWidth >= 768
+        ? desktopNavRef.current
+        : mobileNavRef.current
 
     const updateHeight = () => {
-      const h = navRef.current!.offsetHeight
-      console.log("updating")
-      document.documentElement.style.setProperty('--navbar-h', `${h}px`)
+      const el = getActiveNav()
+      if (!el) return
+
+      // Switch observer if element changed
+      if (currentEl !== el) {
+        if (currentEl) ro.unobserve(currentEl)
+        ro.observe(el)
+        currentEl = el
+      }
+
+      document.documentElement.style.setProperty(
+        '--navbar-h',
+        `${el.offsetHeight}px`
+      )
     }
 
+    const ro = new ResizeObserver(updateHeight)
+
     updateHeight()
-
-    const observer = new ResizeObserver(updateHeight)
-    observer.observe(navRef.current)
-
     window.addEventListener('resize', updateHeight)
 
     return () => {
-      observer.disconnect()
+      if (currentEl) ro.unobserve(currentEl)
+      ro.disconnect()
       window.removeEventListener('resize', updateHeight)
     }
   }, [])
@@ -71,14 +89,21 @@ const Navbar: React.FC = () => {
 
 
 
-  const colorClass = isAtTop ? 'text-white' : 'text-black';
 
+
+
+  const { isDark } = useNavbarTheme()
+
+  const colorClass =
+    isAtTop
+      ? isDark ? 'text-white' : 'text-black'
+      : 'text-black'
   return (
     <div className="sticky top-0 z-30">
       {/* DESKTOP NAVBAR */}
-      <div className="hidden md:block">
+      <div className="hidden md:flex">
         <div
-          ref={navRef}
+          ref={desktopNavRef}
           className={`fixed top-0 left-0 right-0 z-20 flex transition-all duration-700 ease-in-out items-center
             ${isAtTop
               ? 'flex-col gap-2 py-2 shadow-none justify-center bg-transparent'
@@ -87,7 +112,7 @@ const Navbar: React.FC = () => {
           `}
         >
           <Link
-            className={`font-main transition-all duration-700 ease-in-out whitespace-nowrap leading-none ${isAtTop ? 'text-8xl' : 'text-5xl space-between'
+            className={`font-main transition-all duration-700 ease-in-out whitespace-nowrap leading-none ${isAtTop ? 'text-8xl' : 'text-7xl space-between'
               } ${colorClass}`}
             href="/"
           >
@@ -95,35 +120,90 @@ const Navbar: React.FC = () => {
           </Link>
 
           {!isAtTop && (
-            <div className={`flex font-MyFont items-center gap-x-8 ${colorClass}`}>
-              <SearchIcon label="SEARCH" className={colorClass} />
-              <CartIcon label="CART" className={colorClass} />
+            <div className={`flex font-MyFont items-center gap-x-10 ${colorClass}`}>
+              {/* NAV LINKS */}
+              <Link href="/books" className="
+    font-MyFont
+    font-light
+    relative
+    inline-block
+    bg-[linear-gradient(currentColor,currentColor)]
+    bg-[length:0%_1px]
+    bg-left-bottom
+    bg-no-repeat
+    transition-[background-size]
+    duration-300
+    hover:bg-[length:100%_1px]
+  "
+              >
+
+                BOOKS
+              </Link>
+              <Link href="/books" className="
+    font-MyFont
+    font-light
+    relative
+    inline-block
+    bg-[linear-gradient(currentColor,currentColor)]
+    bg-[length:0%_1px]
+    bg-left-bottom
+    bg-no-repeat
+    transition-[background-size]
+    duration-300
+    hover:bg-[length:100%_1px]
+  "
+              >
+                MAGAZINES
+              </Link>
+              <Link href="/pens" className="
+    font-MyFont
+    font-light
+    relative
+    inline-block
+    bg-[linear-gradient(currentColor,currentColor)]
+    bg-[length:0%_1px]
+    bg-left-bottom
+    bg-no-repeat
+    transition-[background-size]
+    duration-300
+    hover:bg-[length:100%_1px]
+  "
+              >                PENS
+              </Link>
+
+
+
+
+              {/* ACTION ICONS */}
+              <SearchIcon label="" className={colorClass} />
+              <CartIcon label="" className={colorClass} />
             </div>
           )}
+
         </div>
       </div>
 
       {/* MOBILE NAVBAR */}
       <div
-        className={`sticky top-0 z-20 flex justify-between px-4 transition-all duration-300 md:hidden
-          items-center ${isAtTop ? 'py-7' : 'py-4 shadow-lg'} bg-transparent backdrop-blur-md ${colorClass}`}
+        ref={mobileNavRef}
+        className={` md:hidden px-2 py-5 w-full fixed justify-between top-0  z-20 flex transition-all duration-700 ease-in-out items-center
+            ${isAtTop
+            ? 'flex-row gap-2 py-3 shadow-none justify-center bg-transparent'
+            : 'flex-row gap-2 py-3 justify-center bg-white bg-opacity-5'
+          }
+          `}
       >
         <motion.div whileTap={{ scale: 0.8 }}>
-          <Menu size={24} className={colorClass} onClick={openModal} />
+          <Menu className={`${colorClass} transition-all duration-700`} onClick={openModal} />
         </motion.div>
-        <Link className={`font-main text-2xl ${colorClass}`} href="/">
-          Variety Book House
+        <Link
+          className={`font-main w-full text-center transition-all duration-700 ease-in-out whitespace-nowrap leading-none text-[31px] ${colorClass}`}
+          href="/"
+        >
+          VARIETY BOOK HOUSE
         </Link>
-        <div className="flex gap-x-5 items-center">
-          <Link href="/Cart" className={`relative ${colorClass}`}>
-            <ShoppingBag size={20} />
-            {cartItems?.length > 0 && (
-              <span className="absolute -top-2 -right-2 bg-red-600 text-[10px] w-4 h-4 rounded-full flex items-center justify-center text-white">
-                {cartItems.length}
-              </span>
-            )}
-          </Link>
-        </div>
+        <SearchIcon label="" size={24} className={colorClass} />
+
       </div>
 
       {/* MOBILE DRAWER */}
@@ -145,21 +225,41 @@ const Navbar: React.FC = () => {
           />
 
           <nav className="flex flex-col gap-y-6 text-2xl font-MyFont">
-            <Link href="/" onClick={closeModal}>
-              Home
-            </Link>
-            <Link href="/Dashboard" onClick={closeModal} className="flex items-center gap-3">
-              Dashboard <User size={20} />
-            </Link>
-            <Link href="/Wishlist" onClick={closeModal} className="flex items-center gap-3">
-              Wishlist <Heart size={20} />
-            </Link>
-            <Link href="/About" onClick={closeModal}>
-              About Us
-            </Link>
-            <Link href="/Contact" onClick={closeModal}>
-              Contact Us
-            </Link>
+            <nav className="flex flex-col gap-y-6 text-2xl font-MyFont">
+              <Link href="/" onClick={closeModal}>
+                Home
+              </Link>
+              <Link href="/books" className='font-MyFont  font-light hover:underline underline-offset-4' onClick={closeModal}>
+
+                MAGAZINES
+              </Link>
+              <Link href="/books" className='hover:underline underline-offset-4
+' onClick={closeModal}>
+                Books
+              </Link>
+
+              <Link href="/pens" className='hover:underline underline-offset-4
+' onClick={closeModal}>
+                Pens
+              </Link>
+
+              <Link href="/Dashboard" onClick={closeModal} className="flex items-center gap-3">
+                Dashboard <User size={20} />
+              </Link>
+
+              <Link href="/Wishlist" onClick={closeModal} className="flex items-center gap-3">
+                Wishlist <Heart size={20} />
+              </Link>
+
+              <Link href="/About" onClick={closeModal}>
+                About Us
+              </Link>
+
+              <Link href="/Contact" onClick={closeModal}>
+                Contact Us
+              </Link>
+            </nav>
+
           </nav>
 
           <div className="mt-auto flex gap-x-6 py-6 border-t border-gray-100">

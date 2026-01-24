@@ -11,6 +11,8 @@ const OPTIONS: EmblaOptionsType = { loop: true }
 const number: number[] = [1, 2, 4, 6, 7]
 import { useSnapScroll } from '../hooks/useSnapScroll'
 import ItemSlide from "@/components/carousel/Embla Carousel Auto Progress React/ItemSlide";
+import ItemCarousel from "@/components/carousel/BestSellerCarousel/ItemCarousel";
+import Footer from "@/components/Footer";
 export default function Home() {
   useSnapScroll()
   return (
@@ -25,22 +27,35 @@ export default function Home() {
 
       <section className="h-screen snap-start">
         <div className="pt-[var(--navbar-h)] h-full">
-          <EmblaCarouselOpacity books={sampleBooks as Book[]} options={OPTIONS} />
+          <ItemCarousel
+            title="BEST SELLERS"
+            books={sampleBooks as Book[]}
+
+          />
         </div>
       </section>
+
 
 
       <section className="h-screen snap-start">
-        <div className="pt-[var(--navbar-h)]  h-full">
+        <div className="pt-[var(--navbar-h)] h-full">
           <EmblaCarouselAutoplayProgress
-            books={sampleBooks as Book[]}
-            slides={[0, 1, 2, 3]}
-            options={{ loop: true }}
-          />
 
+            books={sampleBooks as Book[]}
+            options={OPTIONS}
+
+          />
         </div>
       </section>
+      <section className="h-screen snap-start">
+        <div className="pt-[var(--navbar-h)] h-full">
+          <Footer
 
+
+
+          />
+        </div>
+      </section>
 
     </div>
   )

@@ -39,13 +39,15 @@ export interface CartIconHandle {
 export interface CartIconProps extends HTMLMotionProps<"div"> {
     label?: string;
     size?: number;
+    color?: string;
 }
 const SearchIcon = forwardRef<CartIconHandle, CartIconProps>(
     (
         {
-            label = "SEARCH",
+            label = "",
             className,
             size = 18,
+            color = "",
             onMouseEnter,
             onMouseLeave,
             ...props
@@ -106,7 +108,7 @@ const SearchIcon = forwardRef<CartIconHandle, CartIconProps>(
                     stroke="currentColor"
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    strokeWidth="1"
+                    strokeWidth="1.5"
                     viewBox="0 0 24 24"
                     xmlns="http://www.w3.org/2000/svg"
                     variants={ICON_VARIANTS}

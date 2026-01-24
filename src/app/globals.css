@@ -1,6 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Italiana&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Creepster&family=Dancing+Script&family=Italiana&family=Orbitron&family=Cinzel&family=Inter:wght@400;700&display=swap');
-
+@import url('https://fonts.googleapis.com/css2?family=GFS+Didot&family=Italiana&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap');
 @import "tailwindcss";
 
 @custom-variant dark (&:is(.dark *));
@@ -8,7 +8,13 @@
 
 @theme {
   --font-main: Italiana, serif;
+  --font-heading: "Playfair Display", serif;
 
+}
+
+html,
+body {
+  overflow-x: hidden;
 }
 
 :root {

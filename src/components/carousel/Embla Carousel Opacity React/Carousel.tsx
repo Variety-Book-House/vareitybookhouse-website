@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useRef } from 'react'
 import {
     EmblaCarouselType,
     EmblaEventType,
@@ -8,20 +8,14 @@ import {
 } from 'embla-carousel'
 import useEmblaCarousel from 'embla-carousel-react'
 
-import {
-    NextButton,
-    PrevButton,
-    usePrevNextButtons
-} from './Arrowbutton'
-import { DotButton, useDotButton } from './Dotbutton'
-import ItemCard from '../../ItemCard'
+import { NextButton, PrevButton, usePrevNextButtons } from './Arrowbutton'
+import { useDotButton } from './Dotbutton'
 
-const TWEEN_FACTOR_BASE = 0.84
+const TWEEN_FACTOR_BASE = 0.9
 
 const clamp = (n: number, min: number, max: number) =>
     Math.min(Math.max(n, min), max)
 
-/* ✅ STRICT Book TYPE */
 export interface Book {
     id: string
     volumeInfo: {
@@ -44,26 +38,19 @@ type PropType = {
 }
 
 const EmblaCarouselOpacity: React.FC<PropType> = ({ books, options }) => {
-    const [emblaRef, emblaApi] = useEmblaCarousel(options)
+    const [emblaRef, emblaApi] = useEmblaCarousel({
+        loop: true,
+        align: 'center',
+        ...options
+    })
+
     const tweenFactor = useRef(0)
-    const image = '/image 14.png'
-
-    const imgRef = useRef<HTMLImageElement | null>(null)
-    const [bgColor, setBgColor] = useState('rgb(20,20,20)')
-    const [liked, setLiked] = useState<string[]>([])
-
-    const { selectedIndex, scrollSnaps, scrollTo } = useDotButton(emblaApi)
-
-    const {
-        prevBtnDisabled,
-        nextBtnDisabled,
-        onPrevButtonClick,
-        onNextButtonClick
-    } = usePrevNextButtons(emblaApi)
+    const { selectedIndex } = useDotButton(emblaApi)
+    const { prevBtnDisabled, onPrevButtonClick, onNextButtonClick } =
+        usePrevNextButtons(emblaApi)
 
     const setTweenFactor = useCallback((api: EmblaCarouselType) => {
-        tweenFactor.current =
-            TWEEN_FACTOR_BASE * api.scrollSnapList().length
+        tweenFactor.current = TWEEN_FACTOR_BASE * api.scrollSnapList().length
     }, [])
 
     const tweenOpacity = useCallback(
@@ -82,10 +69,7 @@ const EmblaCarouselOpacity: React.FC<PropType> = ({ books, options }) => {
 
                     if (engine.options.loop) {
                         engine.slideLooper.loopPoints.forEach((loopItem) => {
-                            if (
-                                slideIndex === loopItem.index &&
-                                loopItem.target() !== 0
-                            ) {
+                            if (slideIndex === loopItem.index && loopItem.target() !== 0) {
                                 diff =
                                     loopItem.target() < 0
                                         ? snap - (1 + scrollProgress)
@@ -95,8 +79,12 @@ const EmblaCarouselOpacity: React.FC<PropType> = ({ books, options }) => {
                     }
 
                     const tween = 1 - Math.abs(diff * tweenFactor.current)
-                    api.slideNodes()[slideIndex].style.opacity =
-                        clamp(tween, 0.3, 1).toString()
+                    const opacity = clamp(tween, 0.4, 1)
+                    const scale = clamp(0.92 + tween * 0.08, 0.92, 1)
+
+                    const slide = api.slideNodes()[slideIndex]
+                    slide.style.opacity = opacity.toString()
+                    slide.style.transform = `scale(${scale})`
                 })
             })
         },
@@ -105,7 +93,6 @@ const EmblaCarouselOpacity: React.FC<PropType> = ({ books, options }) => {
 
     useEffect(() => {
         if (!emblaApi) return
-
         setTweenFactor(emblaApi)
         tweenOpacity(emblaApi)
 
@@ -116,80 +103,114 @@ const EmblaCarouselOpacity: React.FC<PropType> = ({ books, options }) => {
             .on('slideFocus', tweenOpacity)
     }, [emblaApi, tweenOpacity, setTweenFactor])
 
+    const activeBook = books[selectedIndex]
+
     return (
-        <div className="grid grid-cols-[3fr_2fr] gap-5  h-fit overflow-hidden m-5">
+        <section className="relative overflow-hidden h-full bg-[#F5F1EB]">
+            {/* CONTENT */}
+            <div
+                className="
+          h-full
+          relative z-10
+          flex flex-col gap-5 md:gap-10
+          px-4 py-4
+          md:grid md:grid-cols-[3fr_1px_2fr]
+          md:items-center
+          md:px-6 md:py-6
+        "
+            >
+                <h2>BEST SELLER</h2>
 
-
-
-            {/* Carousel */}
-            <div className=" relative h-fit group w-full overflow-hidden" ref={emblaRef}>
-                <div className="flex touch-pan-y -ml-4 align-center justify-between">
-                    {books.map((book, index) => (
-                        <div
-                            key={book.id}
-                            className="flex-[0_0_35%]"
-                        >
+                {/* CAROUSEL */}
+                <div
+                    ref={emblaRef}
+                    className="h-full relative w-full overflow-hidden group"
+                >
+                    <div className="flex -ml-3 md:-ml-6 h-full">
+                        {books.map((book) => (
                             <div
-                                className={` flex justify-center transition-transform duration-300 ease-out ${index === selectedIndex
-                                    ? 'scale-100'
-                                    : 'scale-60'
-                                    }`}
+                                key={book.id}
+                                className="flex-[0_0_80%] md:flex-[0_0_42%] pl-3 md:pl-6"
                             >
-                                <img
-                                    ref={imgRef}
-                                    src={image}
-
-                                    crossOrigin="anonymous"
-                                    className="w-full h-full object-fit"
-                                    onError={(e) => (e.currentTarget.src = '/default.jpg')}
-                                />
+                                <div className="flex justify-center items-center h-full py-2 md:py-0">
+                                    <img
+                                        src="/image 14.png"
+                                        alt={book.volumeInfo.title}
+                                        className="
+                      h-full w-auto object-contain
+                      select-none pointer-events-none
+                    "
+                                    />
+                                </div>
                             </div>
-                        </div>
-                    ))}
+                        ))}
+                    </div>
 
-
-
-
-
+                    {/* Arrows */}
+                    <PrevButton
+                        onClick={onPrevButtonClick}
+                        disabled={prevBtnDisabled}
+                        className="
+              absolute top-1/2 left-2 -translate-y-1/2
+              opacity-40 hover:opacity-70
+              transition-opacity
+            "
+                    />
+                    <NextButton
+                        onClick={onNextButtonClick}
+                        className="
+              absolute top-1/2 right-2 -translate-y-1/2
+              opacity-40 hover:opacity-70
+              transition-opacity
+            "
+                    />
                 </div>
-                {/* Buttons */}
-                <PrevButton
-                    onClick={onPrevButtonClick}
-                    disabled={prevBtnDisabled}
-                    className="
-    absolute top-1/2 left-2 -translate-y-1/2
-    opacity-0 pointer-events-none
-    group-hover:opacity-100 group-hover:pointer-events-auto
-    transition-opacity duration-300
-    bg-transparent hover:bg-transparent
-    text-gray-800 disabled:text-gray-400
-  "
-                />
 
-                <NextButton
-                    onClick={onNextButtonClick}
-                    disabled={false}
-                    className="
-    absolute top-1/2 right-2 -translate-y-1/2
-    opacity-0 pointer-events-none
-    group-hover:opacity-100 group-hover:pointer-events-auto
-    transition-opacity duration-300
-    bg-transparent hover:bg-transparent
-    text-gray-800 disabled:text-gray-400
-  "
-                />
+                {/* DIVIDER */}
+                <div className="hidden md:block w-px h-[60%] bg-black mx-auto" />
+                <div className="block md:hidden w-[60%] h-px bg-black mx-auto" />
 
+                {/* INFO PANEL */}
+                {activeBook && (
+                    <div className="flex flex-col justify-center gap-4 md:gap-6 text-black">
+                        <h2
+                            className="
+                font-MyFont
+                text-[22px] md:text-[40px]
+                uppercase
+                font-light
+              "
+                        >
+                            {activeBook.volumeInfo.title}
+                        </h2>
+
+                        <p
+                            className="
+                font-MyFont
+                text-sm md:text-base
+                tracking-[0.25em]
+                uppercase
+              "
+                        >
+                            {activeBook.volumeInfo.authors?.join(', ')}
+                        </p>
+
+                        {activeBook.saleInfo.listPrice && (
+                            <p
+                                className="
+                  font-MyFont
+                  text-sm md:text-base
+                  tracking-[0.2em]
+                  mt-2 md:mt-4
+                "
+                            >
+                                ₹ {activeBook.saleInfo.listPrice.amount}
+                            </p>
+                        )}
+                    </div>
+                )}
             </div>
-
-            <div className="w-full">
-                <h2 className="text-5xl font-light">TITLE</h2>
-                <p className="text-3xl text-wrap font-light text-muted-foreground">
-                    Lorem ipsum dolor sit amet consectetur adipisicing elit. Alias iure nesciunt illo, sunt porro doloribus delectus unde obcaecati, possimus quaerat tempore labore sapiente in ad sint impedit, facere iste voluptas.
-                </p>
-            </div>
-
-
-        </div>
+        </section>
     )
 }
 
