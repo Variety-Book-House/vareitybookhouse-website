@@ -90,11 +90,7 @@ export default function BookCarousel({
                             >
                                 <ItemCard
                                     book={book}
-                                    liked={liked}
-                                    setLiked={setLiked}
-                                    onClick={() =>
-                                        console.log('Clicked book:', book.id)
-                                    }
+
                                 />
                             </motion.div>
                         );

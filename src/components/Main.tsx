@@ -23,14 +23,17 @@ const Main: React.FC = () => {
   const [api, setApi] = React.useState<CarouselApi>()
   const [current, setCurrent] = React.useState(1)
   const { setIsDark } = useNavbarTheme()
+  const [bgColor, setBgColor] = React.useState<string>('black')
 
   React.useEffect(() => {
     if (!api) return
 
     const updateTheme = async () => {
       const index = api.selectedScrollSnap()
-      const isDark = await getImageDarkness(slides[index])
+      const { isDark, avgColor } = await getImageDarkness(slides[index])
+
       setIsDark(isDark)
+      setBgColor(avgColor)
       setCurrent(index + 1)
     }
 
@@ -38,19 +41,24 @@ const Main: React.FC = () => {
     api.on('select', updateTheme)
   }, [api, setIsDark])
 
+
   return (
     <section className="relative w-full h-screen overflow-x-hidden">
       <Carousel setApi={setApi} className="w-full h-full" opts={{ loop: true }}>
         <CarouselContent className="h-screen">
           {slides.map((src, index) => (
             <CarouselItem key={index} className="relative h-screen">
+
+
+
               <Image
                 src={src}
-                alt={`Slide ${index + 1}`}
+                alt="Editorial"
                 fill
-                priority={index === 0}
+                priority
                 className="object-cover"
               />
+
             </CarouselItem>
           ))}
         </CarouselContent>

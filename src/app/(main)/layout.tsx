@@ -1,17 +1,17 @@
 import React, { ReactNode } from "react";
-import "./globals.css";
-import { CartProvider } from "../../context/CartContext";
-import { WishlistProvider } from "../../context/WIshlistContext";
+import "./../globals.css";
+import { CartProvider } from "../../../context/CartContext";
+import { WishlistProvider } from "../../../context/WIshlistContext";
 
 import { Toaster } from "react-hot-toast";
-import Navbar from "../components/Navbar";
-import Footer from "../components/Footer";
-import { ScrollProvider } from "../../context/ScrollContext";
+import Navbar from "../../components/Navbar";
+import Footer from "../../components/Footer";
+import { ScrollProvider } from "../../../context/ScrollContext";
 import { Quicksand, Fraunces } from "next/font/google";
 import Script from "next/script";
 import type { Metadata } from "next";
-import "./embla.css"
-import { NavbarThemeProvider } from "../../context/NavbarThemeContext";
+import "./../embla.css"
+import { NavbarThemeProvider } from "../../../context/NavbarThemeContext";
 /* -------------------- Fonts -------------------- */
 
 const quicksand = Quicksand({

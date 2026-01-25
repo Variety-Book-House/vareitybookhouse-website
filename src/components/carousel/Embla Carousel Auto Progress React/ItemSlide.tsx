@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react'
 import ItemCard from '@/components/ItemCard'
 import type { Book } from '@/components/ItemCard'
+import { CARD_CONFIG } from '@/lib/cardConfig'
 
 interface ItemSlideProps {
     genre: string
@@ -11,55 +12,47 @@ interface ItemSlideProps {
 
 type CardSize = 'sm' | 'md' | 'lg'
 
-const CARD_DIMENSIONS = {
-    sm: { width: 160, height: 260 },
-    md: { width: 200, height: 320 },
-    lg: { width: 260, height: 420 },
-}
 const TITLE_STYLES = {
-    sm: {
-        className: 'text-xl tracking-wide',
-        padding: 'pb-2',
-    },
-    md: {
-        className: 'text-3xl tracking-wider',
-        padding: 'pb-3',
-    },
-    lg: {
-        className: 'text-4xl tracking-[0.15em]',
-        padding: 'pb-4',
-    },
+    sm: { className: 'text-xl tracking-wide', padding: 'pb-2' },
+    md: { className: 'text-3xl tracking-wider', padding: 'pb-3' },
+    lg: { className: 'text-4xl tracking-[0.15em]', padding: 'pb-4' },
 }
 
 const GAP = 24
 
-const ItemSlide = ({ genre, books }: ItemSlideProps) => {
-    const getCardSize = (width: number): CardSize => {
-        if (width < 640) return 'sm'
-        if (width < 1024) return 'md'
-        return 'lg'
-    }
+const getCardSize = (width: number): CardSize => {
+    if (width < 640) return 'sm'
+    if (width < 1024) return 'md'
+    return 'lg'
+}
 
+const ItemSlide = ({ genre, books }: ItemSlideProps) => {
     const [cardSize, setCardSize] = useState<CardSize>('md')
-    const [visibleCount, setVisibleCount] = useState(3)
+    const [visibleCount, setVisibleCount] = useState(1)
 
     useEffect(() => {
         const updateLayout = () => {
-            const width = window.innerWidth
-            const height = window.innerHeight
+            const screenW = window.innerWidth
+            const screenH = window.innerHeight
 
-            const size = getCardSize(width)
+            const size = getCardSize(screenW)
             setCardSize(size)
 
-            const { width: cardW, height: cardH } = CARD_DIMENSIONS[size]
+            const { width: cardW, height: cardH } = CARD_CONFIG[size]
 
-            const containerWidth = width - 40
-            const containerHeight = height - 200
+            // space used by padding + title etc
+            const usableWidth = screenW - 40
+            const usableHeight = screenH - 160
 
-            const cols =
-                Math.floor((containerWidth + GAP) / (cardW + GAP)) || 1
-            const rows =
-                Math.floor((containerHeight + GAP) / (cardH + GAP)) || 1
+            const cols = Math.max(
+                1,
+                Math.floor((usableWidth + GAP) / (cardW + GAP))
+            )
+
+            const rows = Math.max(
+                1,
+                Math.floor((usableHeight + GAP) / (cardH + GAP))
+            )
 
             setVisibleCount(cols * rows)
         }
@@ -70,48 +63,26 @@ const ItemSlide = ({ genre, books }: ItemSlideProps) => {
     }, [])
 
     return (
-        <div
-            className="w-full px-5 py-6 flex flex-col gap-6 bg-cover bg-center overflow-hidden"
-        >
+        <div className="w-full px-5 py-5 flex flex-col gap-2 overflow-hidden">
             <h2
-                style={{
-                    fontFamily:
-                        genre.toLowerCase() === 'horror'
-                            ? 'var(--font-horror)'
-                            : genre.toLowerCase() === 'romance'
-                                ? 'var(--font-romance)'
-                                : genre.toLowerCase() === 'scifi'
-                                    ? 'var(--font-scifi)'
-                                    : genre.toLowerCase() === 'fantasy'
-                                        ? 'var(--font-fantasy)'
-                                        : 'var(--font-default)',
-                }}
-                className={`
-        text-center
-        font-light
-        uppercase
-        ${TITLE_STYLES[cardSize].className}
-        ${TITLE_STYLES[cardSize].padding}
-    `}
+
+                className={` text-Inter
+          text-center font-light uppercase
+          ${TITLE_STYLES[cardSize].className}
+          ${TITLE_STYLES[cardSize].padding}
+        `}
             >
                 {genre}
             </h2>
 
-
             <div
                 className="grid justify-center gap-6"
                 style={{
-                    gridTemplateColumns: `repeat(auto-fit, ${CARD_DIMENSIONS[cardSize].width}px)`,
+                    gridTemplateColumns: `repeat(auto-fit, ${CARD_CONFIG[cardSize].width}px)`,
                 }}
             >
                 {books.slice(0, visibleCount).map((book) => (
-                    <ItemCard
-                        key={book.id}
-                        book={book}
-                        size={cardSize}
-                        liked={[]}
-                        setLiked={() => { }}
-                    />
+                    <ItemCard key={book.id} book={book} />
                 ))}
             </div>
         </div>

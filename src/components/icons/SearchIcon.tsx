@@ -90,8 +90,7 @@ const SearchIcon = forwardRef<CartIconHandle, CartIconProps>(
         return (
             <motion.div
                 className={cn(
-                    "flex items-center gap-2 cursor-pointer select-none",
-                    className
+                    "flex items-center gap-2 cursor-pointer select-none"
                 )}
                 variants={WRAPPER_VARIANTS}
                 animate={controls}
@@ -116,6 +115,9 @@ const SearchIcon = forwardRef<CartIconHandle, CartIconProps>(
                         duration: 1,
                         bounce: 0.3,
                     }}
+                    className={cn(
+                        className
+                    )}
                 >
                     <circle cx="11" cy="11" r="8" />
                     <path d="m21 21-4.3-4.3" />
