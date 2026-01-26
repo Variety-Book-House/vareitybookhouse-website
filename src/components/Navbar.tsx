@@ -34,6 +34,7 @@ export interface WishlistItem {
 }import { useContext } from 'react'
 import { ScrollContext } from '../../context/ScrollContext'
 import { UserIcon } from './icons/UserIcon';
+import { HeartIcon } from './icons/HeartIcon';
 
 
 
@@ -44,6 +45,7 @@ const Navbar: React.FC = () => {
 
   const [isAtTop, setIsAtTop] = useState(true)
   const pathname = usePathname()
+  const isActive = (path: string) => pathname === path
 
   useEffect(() => {
     const container = document.getElementById('snap-container')
@@ -68,17 +70,28 @@ const Navbar: React.FC = () => {
 
   useEffect(() => {
     const container = document.getElementById('snap-container')
-    if (!container) return
+    if (!container) {
+      setIsAtTop(false)
+      return
+    }
 
-    const onScroll = () => {
+    const isHome = pathname === '/'
+
+    const update = () => {
+      if (!isHome) {
+        setIsAtTop(false)
+        return
+      }
+
       setIsAtTop(container.scrollTop < 10)
     }
 
-    onScroll()
-    container.addEventListener('scroll', onScroll)
+    update()
+    container.addEventListener('scroll', update)
 
-    return () => container.removeEventListener('scroll', onScroll)
-  }, [])
+    return () => container.removeEventListener('scroll', update)
+  }, [pathname])
+
 
 
 
@@ -164,47 +177,35 @@ const Navbar: React.FC = () => {
           {!isAtTop && (
             <div className={`flex font-MyFont text-[12px] md:text-[14px] lg:text-[16px] items-center gap-x-5 ${colorClass}`}>
               {/* NAV LINKS */}
-              <Link href="/books" className="
-    font-MyFont
-    font-light
-    relative
-    inline-block
-    bg-[linear-gradient(currentColor,currentColor)]
-    bg-[length:0%_1px]
-    bg-left-bottom
-    bg-no-repeat
-    transition-[background-size]
-    duration-300
-    hover:bg-[length:100%_1px]
-  "
-              >
 
-                BOOKS
-              </Link>
-
-              <Link href="/pens" className="
-    font-MyFont
-    font-light
-    relative
-    inline-block
-    bg-[linear-gradient(currentColor,currentColor)]
-    bg-[length:0%_1px]
-    bg-left-bottom
-    bg-no-repeat
-    transition-[background-size]
-    duration-300
-    hover:bg-[length:100%_1px]
-  "
-              >                PENS
-              </Link>
 
 
 
 
               {/* ACTION ICONS */}
-              <Link href="/search" ><SearchIcon label="" className={colorClass} /></Link>
-              <Link href="/cart" ><CartIcon label="" className={colorClass} /></Link>
-              <Link href="/login" ><UserIcon className={colorClass} /></Link>
+              {!isActive('/search') && (
+                <Link href="/search">
+                  <SearchIcon label="" className={colorClass} />
+                </Link>
+              )}
+
+              {!isActive('/wishlist') && (
+                <Link href="/wishlist">
+                  <HeartIcon label="" className={colorClass} />
+                </Link>
+              )}
+
+              {!isActive('/cart') && (
+                <Link href="/cart">
+                  <CartIcon label="" className={colorClass} />
+                </Link>
+              )}
+
+              {!isActive('/login') && (
+                <Link href="/login">
+                  <UserIcon className={colorClass} />
+                </Link>
+              )}
 
             </div>
           )}
@@ -232,7 +233,47 @@ const Navbar: React.FC = () => {
         >
           VARIETY BOOK HOUSE
         </Link>
-        {isAtTop ? null : (<SearchIcon label="" className={` w-[16px] sm:w-[18px] md:w-[20px] h-[16px] sm:h-[18px] md:h-[20px] ${colorClass}`} />)}
+        {!isAtTop && (
+          <>
+            {isActive('/search') && (
+              <Link href="/cart">
+                <CartIcon
+                  label=''
+                  className={`w-[16px] sm:w-[18px] md:w-[20px] h-[16px] sm:h-[18px] md:h-[20px] ${colorClass}`}
+                />
+              </Link>
+            )}
+
+            {isActive('/cart') && (
+              <Link href="/wishlist">
+                <HeartIcon
+                  label=''
+                  className={`w-[16px] sm:w-[18px] md:w-[20px] h-[16px] sm:h-[18px] md:h-[20px] ${colorClass}`}
+                />
+              </Link>
+            )}
+
+            {isActive('/wishlist') && (
+              <Link href="/search">
+                <SearchIcon
+                  label=""
+                  className={`w-[16px] sm:w-[18px] md:w-[20px] h-[16px] sm:h-[18px] md:h-[20px] ${colorClass}`}
+                />
+              </Link>
+            )}
+
+            {!isActive('/search') &&
+              !isActive('/cart') &&
+              !isActive('/wishlist') && (
+                <Link href="/search">
+                  <SearchIcon
+                    label=""
+                    className={`w-[16px] sm:w-[18px] md:w-[20px] h-[16px] sm:h-[18px] md:h-[20px] ${colorClass}`}
+                  />
+                </Link>
+              )}
+          </>
+        )}
 
 
       </div>
@@ -261,31 +302,13 @@ const Navbar: React.FC = () => {
                 HOME
               </Link>
 
-              <Link href="/books" className='hover:underline underline-offset-4
-' onClick={closeModal}>
-                BOOKS
-              </Link>
 
-              <Link href="/pens" className='hover:underline underline-offset-4
-' onClick={closeModal}>
-                PENS
-              </Link>
 
-              <Link href="/Dashboard" onClick={closeModal} className="flex items-center gap-3">
-                LOGIN <User size={20} />
-              </Link>
+              <Link href="/search" ><SearchIcon label="SEARCH" className={colorClass} /></Link>
+              <Link href="/wishlist" ><HeartIcon label="WISHLIST" className={colorClass} /></Link>
+              <Link href="/cart" ><CartIcon label="CART" className={colorClass} /></Link>
+              <Link href="/login" ><UserIcon className={colorClass} /></Link>
 
-              {/* <Link href="/Wishlist" onClick={closeModal} className="flex items-center gap-3">
-                WISHLIST <Heart size={20} />
-              </Link> */}
-
-              <Link href="/About" onClick={closeModal}>
-                About Us
-              </Link>
-
-              <Link href="/Contact" onClick={closeModal}>
-                Contact Us
-              </Link>
             </nav>
 
           </nav>
