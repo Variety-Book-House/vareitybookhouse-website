@@ -1,117 +1,127 @@
 'use client'
 
-import Image from 'next/image'
 import Link from 'next/link'
-import { X, ShoppingBag } from 'lucide-react'
+import ItemCard, { Book } from '@/components/ItemCard'
+import { Share2 } from 'lucide-react'
+import { useState } from 'react'
 
-const wishlistItems = [
+const initialWishlist: Book[] = [
     {
         id: '1',
-        title: 'Atomic Habits',
-        author: 'James Clear',
-        price: 399,
-        image: '/image 14.png',
+        volumeInfo: {
+            title: 'Atomic Habits',
+            authors: ['James Clear'],
+            imageLinks: { thumbnail: '/image 14.png' },
+        },
+        saleInfo: {
+            listPrice: { amount: 399 },
+        },
     },
     {
         id: '2',
-        title: 'Deep Work',
-        author: 'Cal Newport',
-        price: 349,
-        image: '/image 14.png',
+        volumeInfo: {
+            title: 'Deep Work',
+            authors: ['Cal Newport'],
+            imageLinks: { thumbnail: '/image 14.png' },
+        },
+        saleInfo: {
+            listPrice: { amount: 349 },
+        },
     },
     {
         id: '3',
-        title: 'Ikigai',
-        author: 'Héctor García',
-        price: 299,
-        image: '/image 14.png',
+        volumeInfo: {
+            title: 'Ikigai',
+            authors: ['Héctor García'],
+            imageLinks: { thumbnail: '/image 14.png' },
+        },
+        saleInfo: {
+            listPrice: { amount: 299 },
+        },
     },
 ]
 
 export default function WishlistPage() {
+    const [wishlistItems, setWishlistItems] = useState<Book[]>(initialWishlist)
+    const [isPublic, setIsPublic] = useState(false)
+
+    const handleShare = () => {
+        const shareData = {
+            title: 'My Wishlist',
+            text: 'Check out my wishlist!',
+            url: window.location.href,
+        }
+        if (navigator.share) {
+            navigator.share(shareData)
+        } else {
+            alert('Share not supported on this browser.')
+        }
+    }
+
+    const removeFromWishlist = (id: string) => {
+        setWishlistItems(prev => prev.filter(item => item.id !== id))
+    }
+
     return (
         <div className="bg-white min-h-screen pt-[var(--navbar-h)] px-6 md:px-12">
 
-            {/* TITLE */}
-            <h1 className="font-MyFont font-extralight text-[clamp(1.5rem,3vw,5rem)] mb-16">
-                WISHLIST
-            </h1>
+            {/* HEADER */}
+            <div className="flex justify-between items-center mb-16">
+                <h1 className="font-MyFont font-extralight text-[clamp(1.5rem,1vw,5rem)]">
+                    WISHLIST
+                </h1>
 
-            {/* GRID */}
-            <div
-                className="
-          grid
-          grid-cols-2
-          sm:grid-cols-3
-          md:grid-cols-4
-          lg:grid-cols-5
-          gap-x-6
-          gap-y-16
-        "
-            >
-                {wishlistItems.map(item => (
-                    <div key={item.id} className="group relative">
+                <div className="flex items-center gap-4">
+                    {/* Private / Public toggle */}
+                    <button
+                        onClick={() => setIsPublic(!isPublic)}
+                        className={`px-3 py-1 rounded-lg text-xs uppercase tracking-wide transition
+                        ${isPublic ? 'bg-green-600 text-white' : 'bg-gray-200 text-black'}`}
+                    >
+                        {isPublic ? 'Public' : 'Private'}
+                    </button>
 
-                        {/* IMAGE */}
-                        <div className="relative aspect-[3/4] w-full">
-                            <Image
-                                src={item.image}
-                                alt={item.title}
-                                fill
-                                className="object-cover"
-                            />
-                        </div>
-
-                        {/* HOVER INFO */}
-                        <div
-                            className="
-                absolute inset-0
-                bg-white/90
-                opacity-0
-                group-hover:opacity-100
-                transition
-                flex flex-col
-                justify-between
-                p-4
-              "
-                        >
-                            <div>
-                                <p className="text-sm font-MyFont">
-                                    {item.title}
-                                </p>
-                                <p className="text-xs opacity-50 mt-1">
-                                    {item.author}
-                                </p>
-                            </div>
-
-                            <div className="flex items-center justify-between">
-                                <p className="text-sm">
-                                    ₹{item.price}
-                                </p>
-
-                                <div className="flex gap-4">
-                                    <button className="opacity-40 hover:opacity-100 transition">
-                                        <ShoppingBag size={16} />
-                                    </button>
-                                    <button className="opacity-40 hover:opacity-100 transition">
-                                        <X size={16} />
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                    </div>
-                ))}
+                    {/* Share button */}
+                    <button
+                        onClick={handleShare}
+                        className="p-2 rounded-lg bg-gray-200 hover:bg-gray-300 transition"
+                        title="Share Wishlist"
+                    >
+                        <Share2 size={16} />
+                    </button>
+                </div>
             </div>
 
-            {/* EMPTY STATE */}
-            {wishlistItems.length === 0 && (
+            {/* GRID */}
+            {wishlistItems.length > 0 ? (
+                <div
+                    className="
+                        grid
+                        grid-cols-2
+                        sm:grid-cols-3
+                        md:grid-cols-4
+                        lg:grid-cols-5
+                        gap-x-6
+                        gap-y-16
+                    "
+                >
+                    {wishlistItems.map(book => (
+                        <ItemCard
+                            key={book.id}
+                            book={book}
+                            showDelete
+                            onDelete={(id) => removeFromWishlist(id)}
+                        />
+                    ))}
+                </div>
+            ) : (
+                /* EMPTY STATE */
                 <div className="mt-32 text-center">
                     <p className="text-sm opacity-50 tracking-wide">
                         Your wishlist is empty
                     </p>
                     <Link
-                        href="/books"
+                        href="/search"
                         className="inline-block mt-6 text-xs uppercase tracking-widest underline underline-offset-4"
                     >
                         Discover books

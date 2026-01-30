@@ -201,8 +201,8 @@ const Navbar: React.FC = () => {
                 </Link>
               )}
 
-              {!isActive('/login') && (
-                <Link href="/login">
+              {!isActive('/user') && (
+                <Link href="/user">
                   <UserIcon className={colorClass} />
                 </Link>
               )}

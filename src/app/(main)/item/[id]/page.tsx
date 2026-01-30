@@ -1,137 +1,139 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
+import { useRouter, useParams } from 'next/navigation'
 import Image from 'next/image'
 import { HeartIcon } from '@/components/icons/HeartIcon'
 import { CartIcon } from '@/components/icons/CartIcon'
-import { Book } from '@/components/ItemCard'
+import { Product } from '@/lib/definitions'
 
-interface ItemDetailPageProps {
-    book: Book
-}
-
-export default function ItemDetailPage({ book }: ItemDetailPageProps) {
+export default function ItemDetailPage() {
     const router = useRouter()
+    const params = useParams<{ id: string }>()
+    const id = params?.id
+
+    const [product, setProduct] = useState<Product | null>(null)
+    const [loading, setLoading] = useState(true)
     const [quantity, setQuantity] = useState(1)
     const [liked, setLiked] = useState(false)
-    const [mainImage, setMainImage] = useState<string>(
-        '/Image 14.png'
-    )
+    const [mainImage, setMainImage] = useState<string>('')
+    const [isAddingToCart, setIsAddingToCart] = useState(false)
 
-    // Mock thumbnails
-    const thumbnails = [
-        '/Image 14.png',
-        '/Image 14.png',
-        '/Image 14.png',
-    ]
+    useEffect(() => {
+        if (!id) return
 
-    const price = 400
+        const fetchProduct = async () => {
+            try {
+                const res = await fetch(`/api/products/${id}`)
+                if (!res.ok) throw new Error('Product not found')
+
+                const data = await res.json()
+                setProduct(data)
+                setMainImage(data.images?.[0] || '/image 14.png')
+            } catch (error) {
+                console.error('Failed to fetch product:', error)
+            } finally {
+                setLoading(false)
+            }
+        }
+
+        fetchProduct()
+    }, [id])
+
+    const handleAddToCart = async () => {
+        if (!product || isAddingToCart) return
+
+        setIsAddingToCart(true)
+
+        try {
+            const res = await fetch('/api/cart/add', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    productId: product.id,
+                    quantity,
+                }),
+            })
+
+            if (res.ok) {
+                alert('Added to cart')
+            } else if (res.status === 401) {
+                router.push('/login')
+            } else {
+                alert('Failed to add to cart')
+            }
+        } catch {
+            alert('Something went wrong')
+        } finally {
+            setIsAddingToCart(false)
+        }
+    }
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center min-h-screen">
+                Loading...
+            </div>
+        )
+    }
+
+    if (!product) {
+        return (
+            <div className="flex items-center justify-center min-h-screen">
+                Product not found
+            </div>
+        )
+    }
+
+    const thumbnails = product.images?.length
+        ? product.images
+        : ['/image 14.png']
+
+    const isOutOfStock = product.stock === 0
 
     return (
-        <div className="flex flex-col md:flex-row pt-[var(--navbar-h)] min-h-screen bg-white">
-
-            {/* LEFT: IMAGE + THUMBNAILS */}
-            <div className="md:w-1/2 w-full flex flex-col items-center">
-                <div className="relative w-full h-[60vh] md:h-screen flex justify-center items-center bg-[#f5f5f5]">
-                    <Image
-                        src={mainImage}
-                        alt={'Book Image'}
-                        fill
-                        className="object-contain"
-                    />
-                </div>
-
-                {/* THUMBNAILS */}
-                <div className="flex gap-4 mt-4 px-4 md:px-16 overflow-x-auto scrollbar-none">
-                    {thumbnails.map((thumb, idx) => (
-                        <div
-                            key={idx}
-                            onClick={() => setMainImage(thumb)}
-                            className={`flex-shrink-0 w-20 h-28 border ${mainImage === thumb ? 'border-black' : 'border-gray-300'
-                                } cursor-pointer transition-transform hover:scale-105`}
-                        >
-                            <Image
-                                src={thumb}
-                                alt={`Thumbnail ${idx + 1}`}
-                                width={80}
-                                height={112}
-                                className="object-contain w-full h-full"
-                            />
-                        </div>
-                    ))}
-                </div>
+        <div className="flex flex-col md:flex-row min-h-screen">
+            {/* IMAGE */}
+            <div className="md:w-1/2 relative h-[70vh] md:h-screen bg-[#f5f5f5]">
+                <Image
+                    src={mainImage}
+                    alt={product.title}
+                    fill
+                    className="object-contain"
+                />
             </div>
 
-            {/* RIGHT: INFO */}
-            <div className="md:w-1/2 w-full flex flex-col p-8 md:p-16 justify-start">
+            {/* INFO */}
+            <div className="md:w-1/2 p-10">
+                <p className="uppercase text-xs opacity-50">{product.genre}</p>
+                <h1 className="text-4xl mb-2">{product.title}</h1>
+                <p className="text-gray-600">{product.author}</p>
 
-                {/* CATEGORY & TITLE */}
-                <p className="text-xs tracking-widest uppercase opacity-50 mb-2">
-                    BOOK
-                </p>
-                <h1 className="text-4xl md:text-5xl font-light tracking-wide mb-4">
-                    {'TITLE'}
-                </h1>
-                <p className="text-sm md:text-base text-gray-600 mb-6">
-                    {'AUTHOR'}
+                <p className="text-2xl mt-4">₹{product.MRP}</p>
+
+                <p className={`mt-2 ${isOutOfStock ? 'text-red-600' : 'text-green-600'}`}>
+                    {isOutOfStock ? 'Out of stock' : `${product.stock} in stock`}
                 </p>
 
-                {/* PRICE */}
-                <p className="text-2xl md:text-3xl font-medium mb-8">₹{price}</p>
-
-                {/* QUANTITY + ACTIONS */}
-                <div className="flex items-center gap-4 mb-8">
-                    <div className="flex items-center border border-black/20 rounded">
-                        <button
-                            className="px-4 py-2 text-lg font-light hover:bg-black/5 transition"
-                            onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                        >
-                            -
-                        </button>
-                        <span className="px-6 text-lg font-light">{quantity}</span>
-                        <button
-                            className="px-4 py-2 text-lg font-light hover:bg-black/5 transition"
-                            onClick={() => setQuantity(quantity + 1)}
-                        >
-                            +
-                        </button>
-                    </div>
-
+                <div className="flex gap-4 mt-6">
                     <button
-                        onClick={() => console.log('Added to cart')}
-                        className="flex items-center gap-2 bg-black text-white uppercase text-sm tracking-widest px-6 py-3 hover:scale-[1.02] transition-transform"
+                        disabled={isOutOfStock || isAddingToCart}
+                        onClick={handleAddToCart}
+                        className="bg-black text-white px-6 py-3 disabled:bg-gray-400"
                     >
-                        <CartIcon size={18} /> Add to Cart
+                        <CartIcon size={18} />{' '}
+                        {isAddingToCart ? 'Adding...' : 'Add to Cart'}
                     </button>
 
                     <button
                         onClick={() => setLiked(!liked)}
-                        className={`border border-black p-2 rounded hover:scale-[1.1] transition-transform ${liked ? 'bg-black text-white' : ''
-                            }`}
+                        className="border p-3"
                     >
                         <HeartIcon size={18} />
                     </button>
                 </div>
 
-                {/* DESCRIPTION */}
-                <div className="text-sm md:text-base text-gray-700 leading-relaxed">
-                    <p className="uppercase opacity-50 tracking-wide mb-2">Description</p>
-                    <p>
-                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras
-                        bibendum ex eu sapien fermentum, ut ultricies enim faucibus. Sed
-                        vehicula, nisl sed ullamcorper sodales, urna purus dapibus ex, nec
-                        commodo velit libero nec justo.
-                    </p>
-                </div>
-
-                {/* BACK BUTTON */}
-                <button
-                    onClick={() => router.back()}
-                    className="mt-12 text-xs uppercase tracking-wide opacity-40 hover:opacity-80 transition"
-                >
-                    Back
-                </button>
+                <p className="mt-8">{product.description}</p>
             </div>
         </div>
     )

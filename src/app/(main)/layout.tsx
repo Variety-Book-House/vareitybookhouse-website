@@ -58,7 +58,9 @@ export default function RootLayout({ children }: RootLayoutProps) {
               <ScrollProvider>
                 <NavbarThemeProvider>
                   <Navbar />
+
                   {children}
+
                 </NavbarThemeProvider>
               </ScrollProvider>
             </WishlistProvider>
