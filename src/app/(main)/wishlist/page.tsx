@@ -1,49 +1,49 @@
 'use client'
 
 import Link from 'next/link'
-import ItemCard, { Book } from '@/components/ItemCard'
+import ItemCard from '@/components/ItemCard'
 import { Share2 } from 'lucide-react'
-import { useState } from 'react'
-
-const initialWishlist: Book[] = [
-    {
-        id: '1',
-        volumeInfo: {
-            title: 'Atomic Habits',
-            authors: ['James Clear'],
-            imageLinks: { thumbnail: '/image 14.png' },
-        },
-        saleInfo: {
-            listPrice: { amount: 399 },
-        },
-    },
-    {
-        id: '2',
-        volumeInfo: {
-            title: 'Deep Work',
-            authors: ['Cal Newport'],
-            imageLinks: { thumbnail: '/image 14.png' },
-        },
-        saleInfo: {
-            listPrice: { amount: 349 },
-        },
-    },
-    {
-        id: '3',
-        volumeInfo: {
-            title: 'Ikigai',
-            authors: ['Héctor García'],
-            imageLinks: { thumbnail: '/image 14.png' },
-        },
-        saleInfo: {
-            listPrice: { amount: 299 },
-        },
-    },
-]
-
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { Product } from '@/lib/definitions'
 export default function WishlistPage() {
-    const [wishlistItems, setWishlistItems] = useState<Book[]>(initialWishlist)
+    const router = useRouter()
+    const [wishlistItems, setWishlistItems] = useState<Product[]>([])
     const [isPublic, setIsPublic] = useState(false)
+    const [isLoading, setIsLoading] = useState(true)
+    const [isUpdatingVisibility, setIsUpdatingVisibility] = useState(false)
+
+    useEffect(() => {
+        fetchWishlist()
+    }, [])
+
+    const fetchWishlist = async () => {
+        try {
+            const response = await fetch('/api/wishlist')
+
+            if (response.status === 401) {
+                router.push('/login')
+                return
+            }
+
+            if (!response.ok) {
+                throw new Error('Failed to fetch wishlist')
+            }
+
+            const data = await response.json()
+
+            // Transform database items to Book format
+            const products: Product[] = data.items
+            setWishlistItems(products)
+            setIsPublic(data.isPublic)
+
+
+        } catch (error) {
+            console.error('Error fetching wishlist:', error)
+        } finally {
+            setIsLoading(false)
+        }
+    }
 
     const handleShare = () => {
         const shareData = {
@@ -54,17 +54,60 @@ export default function WishlistPage() {
         if (navigator.share) {
             navigator.share(shareData)
         } else {
-            alert('Share not supported on this browser.')
+            // Fallback: copy to clipboard
+            navigator.clipboard.writeText(window.location.href)
+            alert('Link copied to clipboard!')
         }
     }
 
-    const removeFromWishlist = (id: string) => {
-        setWishlistItems(prev => prev.filter(item => item.id !== id))
+    const toggleVisibility = async () => {
+        setIsUpdatingVisibility(true)
+
+        try {
+            const response = await fetch('/api/wishlist/visibility', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ isPublic: !isPublic }),
+            })
+
+            if (response.ok) {
+                setIsPublic(!isPublic)
+            } else {
+                console.error('Failed to update visibility')
+            }
+        } catch (error) {
+            console.error('Error updating visibility:', error)
+        } finally {
+            setIsUpdatingVisibility(false)
+        }
+    }
+
+    const removeFromWishlist = async (id: string) => {
+        try {
+            const response = await fetch('/api/wishlist/remove', {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ productId: id }),
+            })
+
+            if (response.ok) {
+                setWishlistItems(prev => prev.filter(item => item.id !== id))
+            }
+        } catch (error) {
+            console.error('Error removing from wishlist:', error)
+        }
+    }
+
+    if (isLoading) {
+        return (
+            <div className="bg-white min-h-screen pt-[var(--navbar-h)] px-6 md:px-12 flex items-center justify-center">
+                <p className="text-sm opacity-50">Loading...</p>
+            </div>
+        )
     }
 
     return (
         <div className="bg-white min-h-screen pt-[var(--navbar-h)] px-6 md:px-12">
-
             {/* HEADER */}
             <div className="flex justify-between items-center mb-16">
                 <h1 className="font-MyFont font-extralight text-[clamp(1.5rem,1vw,5rem)]">
@@ -74,9 +117,11 @@ export default function WishlistPage() {
                 <div className="flex items-center gap-4">
                     {/* Private / Public toggle */}
                     <button
-                        onClick={() => setIsPublic(!isPublic)}
+                        onClick={toggleVisibility}
+                        disabled={isUpdatingVisibility}
                         className={`px-3 py-1 rounded-lg text-xs uppercase tracking-wide transition
-                        ${isPublic ? 'bg-green-600 text-white' : 'bg-gray-200 text-black'}`}
+                        ${isPublic ? 'bg-green-600 text-white' : 'bg-gray-200 text-black'}
+                        disabled:opacity-50`}
                     >
                         {isPublic ? 'Public' : 'Private'}
                     </button>

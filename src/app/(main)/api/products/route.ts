@@ -1,30 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import pool from '@/neonSetup'
 import { Product } from '@/lib/definitions'
-async function fetchGoogleBookImage(title: string, author?: string) {
-    try {
-        const q = encodeURIComponent(
-            `${title}${author ? `+inauthor:${author}` : ''}`
-        )
-
-        const res = await fetch(
-            `https://www.googleapis.com/books/v1/volumes?q=${q}&maxResults=1`
-        )
-
-        if (!res.ok) return null
-
-        const data = await res.json()
-        const volume = data.items?.[0]
-
-        return (
-            volume?.volumeInfo?.imageLinks?.thumbnail ||
-            volume?.volumeInfo?.imageLinks?.smallThumbnail ||
-            null
-        )
-    } catch {
-        return null
-    }
-}
+import { fetchOpenLibraryBookImage } from '@/lib/googlebooksimagehelper'
 
 export async function GET(request: NextRequest) {
     try {
@@ -110,21 +87,30 @@ export async function GET(request: NextRequest) {
 
         const products = await Promise.all(
             result.rows.map(async (product: Product) => {
-                if (product.images?.length) {
-                    return product
-                }
-
-                const image = await fetchGoogleBookImage(
-                    product.title,
-                    product.author || ''
-                )
+                let image =
+                    product.images?.[0] ??
+                    (await fetchOpenLibraryBookImage(product.title, product.author || ''))
 
                 return {
-                    ...product,
-                    images: image ? [image] : [],
+                    id: product.id,
+                    title: product.title,
+                    author: product.author,
+                    description: product.description,
+                    MRP: product.MRP,
+                    images: image ? [image] : ['/image 14.png'],
+                    stock: product.stock,
+                    is_active: product.is_active,
+                    created_at: product.created_at,
+                    updated_at: product.updated_at,
+                    genre: product.genre,
+                    language: product.language,
+                    publisher: product.publisher,
+                    barcode: product.barcode,
                 }
             })
         )
+
+
 
         return NextResponse.json({
             products,

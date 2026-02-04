@@ -10,62 +10,63 @@ import {
   usePrevNextButtons
 } from './EmblaCarouselArrowButtons'
 import ItemSlide from './ItemSlide'
-import { sampleBooks } from '@/components/sampleBooks'
 
-export interface Book {
-  id?: string
-  volumeInfo?: {
-    title?: string
-    authors?: string[]
-    categories?: string[]
-    imageLinks?: {
-      thumbnail?: string
-    }
-  }
-  saleInfo?: {
-    listPrice?: {
-      amount?: number
-    }
-  }
-}
 
+import { Product } from '@/lib/definitions'
 type PropType = {
-  books: Book[]
-
+  feed: {
+    genre: string
+    books: Product[]
+  }[]
   options?: EmblaOptionsType
+  loading?: boolean
 }
 
 const EmblaCarouselAutoplayProgress: React.FC<PropType> = ({
-  books,
-  options
+  feed,
+  options,
+  loading = false
 }) => {
   const progressNode = useRef<HTMLDivElement>(null)
 
-  const [emblaRef, emblaApi] = useEmblaCarousel(options, [
-    Autoplay({
-      playOnInit: true,
-      delay: 3000,
-      stopOnInteraction: false,
-      stopOnMouseEnter: false
-    })
-  ])
+  // ⛔ Do NOT init Embla while loading or empty
+  const [emblaRef, emblaApi] = useEmblaCarousel(
+    !loading && feed.length > 0 ? options : undefined,
+    [
+      Autoplay({
+        playOnInit: true,
+        delay: 3000,
+        stopOnInteraction: false,
+        stopOnMouseEnter: false
+      })
+    ]
+  )
 
   usePrevNextButtons(emblaApi)
   useAutoplayProgress(emblaApi, progressNode)
 
+  /* ---------- LOADER ---------- */
+  if (loading || feed.length === 0) {
+    return (
+      <div className="h-full w-full flex flex-col items-center justify-center gap-3">
+        <div className="h-10 w-10 border-2 border-black border-t-transparent rounded-full animate-spin" />
+        <span className="text-sm font-light tracking-wide">
+          Loading collections...
+        </span>
+      </div>
+    )
+  }
+
+  /* ---------- CAROUSEL ---------- */
   return (
     <div className="embla w-full">
       <div className="embla__viewport" ref={emblaRef}>
         <div className="embla__container">
-          <div className="embla__slide">
-            <ItemSlide genre="horror" books={books} />
-          </div>
-          <div className="embla__slide">
-            <ItemSlide genre="scifi" books={books} />
-          </div>
-          <div className="embla__slide">
-            <ItemSlide genre="romance" books={books} />
-          </div>
+          {feed.map(({ genre, books }) => (
+            <div className="embla__slide" key={genre}>
+              <ItemSlide genre={genre} books={books} />
+            </div>
+          ))}
         </div>
       </div>
 
@@ -75,5 +76,7 @@ const EmblaCarouselAutoplayProgress: React.FC<PropType> = ({
     </div>
   )
 }
+
+
 
 export default EmblaCarouselAutoplayProgress

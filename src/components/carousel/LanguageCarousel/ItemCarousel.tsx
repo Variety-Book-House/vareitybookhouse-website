@@ -1,23 +1,36 @@
 'use client'
 
 import React, { useRef, useState, useEffect } from 'react'
-import ItemCard, { Book } from '@/components/ItemCard'
-
+import ItemCard from '@/components/ItemCard'
+import { Product } from '@/lib/definitions'
 interface LanguageCarouselProps {
     languages: string[]
-    books: Book[]
+    books: Product[]
+    loading?: boolean
+    onActiveChange?: (language: string) => void
 }
+
 
 const SLIDE_HEIGHT = 36
 const SLIDE_GAP = 8 // gap-2 = 0.5rem = 8px
 const SLIDE_STEP = SLIDE_HEIGHT + SLIDE_GAP
 
 
-const LanguageCarousel = ({ languages, books }: LanguageCarouselProps) => {
+const LanguageCarousel = ({
+    languages,
+    books,
+    loading = false,
+    onActiveChange,
+}: LanguageCarouselProps) => {
+
     const langRef = useRef<HTMLDivElement>(null)
     const cardRef = useRef<HTMLDivElement>(null)
     const [activeIndex, setActiveIndex] = useState(0)
-
+    useEffect(() => {
+        if (onActiveChange) {
+            onActiveChange(languages[activeIndex])
+        }
+    }, [activeIndex])
     useEffect(() => {
         const container = langRef.current
         if (!container) return
@@ -229,14 +242,22 @@ text-[14px] md:text-[18px]
                 </div>
                 <div
                     ref={cardRef}
-                    className="flex gap-4 overflow-x-auto scrollbar-hide scroll-smooth"
+                    className="flex gap-4 overflow-x-auto scrollbar-hide scroll-smooth min-h-[320px]"
                 >
-                    {books.map((book) => (
-                        <div key={book.id} className="shrink-0">
-                            <ItemCard book={book} show={true} />
+                    {loading ? (
+                        <div className="flex w-full h-[320px] items-center justify-center">
+                            <div className="h-10 w-10 border-2 border-black border-t-transparent rounded-full animate-spin" />
                         </div>
-                    ))}
+                    ) : (
+                        books.map((book) => (
+                            <div key={book.id} className="shrink-0">
+                                <ItemCard book={book} show={true} />
+                            </div>
+                        ))
+                    )}
                 </div>
+
+
 
 
 

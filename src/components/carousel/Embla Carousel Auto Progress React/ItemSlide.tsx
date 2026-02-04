@@ -2,12 +2,12 @@
 
 import React, { useEffect, useState } from 'react'
 import ItemCard from '@/components/ItemCard'
-import type { Book } from '@/components/ItemCard'
+import { Product } from '@/lib/definitions'
 import { CARD_CONFIG } from '@/lib/cardConfig'
 
 interface ItemSlideProps {
     genre: string
-    books: Book[]
+    books: Product[]
 }
 
 type CardSize = 'sm' | 'md' | 'lg'
@@ -82,7 +82,7 @@ const ItemSlide = ({ genre, books }: ItemSlideProps) => {
                 }}
             >
                 {books.slice(0, visibleCount).map((book) => (
-                    <ItemCard key={book.id} book={book} />
+                    <ItemCard show key={book.id} book={book} />
                 ))}
             </div>
         </div>

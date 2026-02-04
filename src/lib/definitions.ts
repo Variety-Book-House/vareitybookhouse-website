@@ -10,15 +10,15 @@ export interface Product {
     title: string
     description: string | null
     MRP: number
-    images: string[]
+    images: string[] | null
     stock: number
     is_active: boolean
     created_at: Date
     updated_at: Date
     genre: string | null
     language: string | null
-    publication: string | null
-    author: string | null
+    publisher: string | null
+    author: string
     barcode: string | null
 }
 

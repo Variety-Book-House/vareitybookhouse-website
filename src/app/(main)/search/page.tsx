@@ -2,7 +2,7 @@
 import { useCardGrid } from '@/hooks/useCardGrid'
 import { useEffect, useRef, useState } from 'react'
 import { X, SlidersHorizontal, ArrowUpDown } from 'lucide-react'
-import ItemCard, { Book } from '@/components/ItemCard'
+import ItemCard from '@/components/ItemCard'
 import { FilterSection } from './FilterSection'
 import { SortDropdown } from './SortTopDown'
 import { Product, productToBook } from '@/lib/definitions'
@@ -80,7 +80,7 @@ export default function SearchPage() {
                     query,
                     sortBy,
                     page: currentPage.toString(),
-                    limit: '8'
+                    limit: '10'
                 })
 
                 if (selectedCategory) {
@@ -121,7 +121,7 @@ export default function SearchPage() {
     const [openSection, setOpenSection] = useState<'category' | 'price' | null>(null)
 
     // Convert products to Book format for ItemCard
-    const books: Book[] = products.map(productToBook)
+
 
     return (
         <div className="bg-white flex pt-[var(--navbar-h)] flex-row min-h-screen">
@@ -366,13 +366,13 @@ export default function SearchPage() {
                         </p>
                     )}
 
-                    {!loading && books.length === 0 && (
+                    {!loading && products.length === 0 && (
                         <p className="font-MyFont text-sm opacity-50">
                             No results found
                         </p>
                     )}
 
-                    {!loading && books.length > 0 && (
+                    {!loading && products.length > 0 && (
                         <div
                             className="grid justify-center"
                             style={{
@@ -380,8 +380,8 @@ export default function SearchPage() {
                                 gap: `${gap}px`,
                             }}
                         >
-                            {books.map(book => (
-                                <ItemCard key={book.id} book={book} />
+                            {products.map(product => (
+                                <ItemCard key={product.id} book={product} />
                             ))}
                         </div>
                     )}

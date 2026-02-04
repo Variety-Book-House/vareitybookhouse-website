@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import pool from '@/neonSetup'
 
-async function fetchGoogleBookImage(title: string, author?: string) {
+async function fetchOpenLibraryBookImage(title: string, author?: string) {
     try {
         const q = encodeURIComponent(
             `${title}${author ? `+inauthor:${author}` : ''}`
@@ -17,8 +17,8 @@ async function fetchGoogleBookImage(title: string, author?: string) {
         const volume = data.items?.[0]
 
         return (
-            volume?.volumeInfo?.imageLinks?.thumbnail ||
-            volume?.volumeInfo?.imageLinks?.smallThumbnail ||
+            volume?.volumeInfo?.imageLinks?.thumbnail?.replace('http://', 'https://') ||
+            volume?.volumeInfo?.imageLinks?.smallThumbnail?.replace('http://', 'https://') ||
             null
         )
     } catch {
@@ -53,7 +53,7 @@ export async function GET(
         }
 
         // 🔹 Fetch image from Google Books
-        const image = await fetchGoogleBookImage(
+        const image = await fetchOpenLibraryBookImage(
             product.title,
             product.author
         )

@@ -1,11 +1,11 @@
 'use client'
 import React, { useRef, useState, useEffect } from 'react'
 
-import ItemCard, { Book } from '@/components/ItemCard'
-
+import ItemCard from '@/components/ItemCard'
+import { Product } from '@/lib/definitions'
 interface ItemCarouselProps {
     title: string
-    books: Book[]
+    books: Product[]
 }
 
 const ItemCarousel = ({ title, books }: ItemCarouselProps) => {
